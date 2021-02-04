@@ -13,6 +13,7 @@ const groupByPublicationTime = (data: FbStatData, aggregation: (data: FbStatData
     Object.entries(groupedByDay).forEach(([day, dayGroup]) => {
         const groupedByHour = groupBy(dayGroup, (datum) => datum.Publié.getHours())
         Object.entries(groupedByHour).forEach(([hour, hourGroup]) => {
+            console.log(day, hour, hourGroup.map(v => v['Lifetime Post Total Reach']))
             aggregatedData.push({
                 value: aggregation(hourGroup),
                 columns: {hour: parseInt(hour, 10), day: parseInt(day, 10)}
