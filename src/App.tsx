@@ -15,7 +15,7 @@ const groupByPublicationTime = (data: FbStatData, aggregation: (data: FbStatData
         Object.entries(groupedByHour).forEach(([hour, hourGroup]) => {
             aggregatedData.push({
                 value: aggregation(hourGroup),
-                columns: {hour, day}
+                columns: {hour: parseInt(hour, 10), day: parseInt(day, 10)}
             })
         })
     })
@@ -33,9 +33,14 @@ function App() {
     console.log(tableData)
     return (
         <div className="App">
-            <FileLoader onLoad={onLoad} />
+            {!tableData ? <FileLoader onLoad={onLoad} />: null}
             {tableData ? 
-                <Table data={tableData} />
+                (   
+                    <>
+                        <h2>Lifetime Post Total Reach</h2>
+                        <Table data={tableData} />
+                    </>
+                )
             : null}
         </div>
     )

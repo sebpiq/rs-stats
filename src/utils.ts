@@ -17,5 +17,6 @@ export const parseDateString = (dateStr: DateString) => {
     date.setHours(parseInt(parsed[4], 10))
     date.setMinutes(parseInt(parsed[5], 10))
     date.setSeconds(parseInt(parsed[6], 10))
+
     return date
 }
