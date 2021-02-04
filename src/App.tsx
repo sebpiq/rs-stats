@@ -1,26 +1,44 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import groupBy from 'lodash.groupby'
+import React, { useState } from 'react'
+import FileLoader from './FileLoader'
+import Table from './Table'
+import { AggregatedValue, FbStatData, FbStatDatumNumberFields, TableData } from './types'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const makeAggregationAvg = (fieldName: FbStatDatumNumberFields) => 
+    (data: FbStatData) => data.reduce((total, datum) => total + datum[fieldName], 0) / data.length
+
+const groupByPublicationTime = (data: FbStatData, aggregation: (data: FbStatData) => AggregatedValue) => {
+    const aggregatedData: TableData = []
+    const groupedByDay = groupBy(data, (datum) => datum.Publié.getDay())
+    Object.entries(groupedByDay).forEach(([day, dayGroup]) => {
+        const groupedByHour = groupBy(dayGroup, (datum) => datum.Publié.getHours())
+        Object.entries(groupedByHour).forEach(([hour, hourGroup]) => {
+            aggregatedData.push({
+                value: aggregation(hourGroup),
+                columns: {hour, day}
+            })
+        })
+    })
+    return aggregatedData
 }
 
-export default App;
+function App() {
+    const [tableData, setTableData] = useState<TableData | null>(null)
+    const onLoad = (data: FbStatData) => {
+        setTableData(groupByPublicationTime(
+            data, 
+            makeAggregationAvg('Lifetime Post Total Reach')
+        ))
+    }
+    console.log(tableData)
+    return (
+        <div className="App">
+            <FileLoader onLoad={onLoad} />
+            {tableData ? 
+                <Table data={tableData} />
+            : null}
+        </div>
+    )
+}
+
+export default App
